@@ -1,4 +1,4 @@
-# 🟩 Minecraft Hosting Panel
+# ⛏️ Minecraft Hosting Panel (PixelHost)
 
 A self-hosted web interface to host, manage, and control Minecraft servers — built for performance, simplicity, and full control.
 
