@@ -2,8 +2,8 @@
 
 A self-hosted web interface to host, manage, and control Minecraft servers — built for performance, simplicity, and full control.
 
-![Minecraft Hosting Screenshot](./screenshot1.png)
 ![Minecraft Hosting Screenshot](./screenshot2.png)
+![Minecraft Hosting Screenshot](./screenshot1.png)
 
 ## 🌐 About the Project
 
