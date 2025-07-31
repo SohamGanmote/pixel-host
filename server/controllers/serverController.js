@@ -22,9 +22,67 @@ function startServer(req, res) {
 	mcProcess.stdout.on("data", (data) =>
 		broadcastLog(`[MC] ${data.toString()}`)
 	);
+
+		mcProcess.stdout.on("data", (data) => {
+		const output = data.toString();
+
+		// Detect ask prompt
+		const match = output.match(/<([^>]+)>\s+ask\s+(.+)/i);
+		if (match) {
+			const player = match[1];
+			const prompt = match[2].trim();
+			console.log(`Received ask command from ${player}: ${prompt}`);
+
+			const escapedPrompt = prompt.replace(/"/g, '\\"');
+			const llamaCmd = `/home/fezzy/shared-drive/LLM/llama.cpp/build/bin/llama-cli \
+  			-m /home/fezzy/shared-drive/LLM/llama.cpp/models/phi-2.gguf \
+  			-p "User: Answer briefly in one short sentence: ${escapedPrompt} in minecraft\\nAssistant:" \
+  			--n-predict 50 \
+  			--ctx-size 256 \
+  			--threads 2
+			`;
+
+			const llama = spawn("bash", ["-c", llamaCmd]);
+
+			let answer = "";
+
+			llama.stdout.on("data", (data) => {
+				const chunk = data.toString();
+				console.log(`[llama output] ${chunk}`);
+				answer += chunk;
+			});
+
+			llama.stderr.on("data", (data) => {
+				console.error(`llama stderr: ${data}`);
+			});
+
+			llama.on("error", (err) => {
+				console.error(`Failed to start llama process: ${err.message}`);
+			});
+
+			llama.on("close", () => {
+				const cleanAnswer = answer
+					.split("Assistant:")
+					.pop() // Keep only content after 'Assistant:'
+					.replace(/\[.*?\]/g, "") // Remove bracketed tags like [llama output]
+					.replace(/\s+/g, " ") // Normalize whitespace
+					.replace(/[^a-zA-Z0-9\s.,!?'"()-]/g, "") // Strip non-printables
+					.trim();
+
+				console.log(`Final answer: ${cleanAnswer}`);
+				mcProcess.stdin.write(
+					`/tellraw @a {"text":"${
+						cleanAnswer || "Sorry, I couldn't generate a response."
+					}","color":"green"}\n`
+				);
+			});
+		}
+	});
+	
 	mcProcess.stderr.on("data", (data) =>
 		broadcastLog(`[MC-ERR] ${data.toString()}`)
 	);
+	
 	mcProcess.on("exit", (code) => {
 		broadcastLog(`[MC] Minecraft exited with code ${code}`);
 		mcProcess = null;
