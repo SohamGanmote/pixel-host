@@ -14,7 +14,7 @@ function startServer(req, res) {
 
 	mcProcess = spawn("bash", [
 		"-c",
-		`cd ${SERVER_DIR} && java -Xms1024M -Xmx1024M -jar ${SERVER_JAR} nogui`,
+		`cd ${SERVER_DIR} && java -Xms4096M -Xmx4096M -jar ${SERVER_JAR} nogui`,
 	]);
 
 	startUptime();
@@ -154,3 +154,4 @@ module.exports = {
 	getSettings,
 	saveSettings,
 };
+
